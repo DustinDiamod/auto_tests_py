@@ -1,45 +1,44 @@
+from faker import Faker
 from selenium.common import TimeoutException
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.ui import WebDriverWait
 
-from PySteam.pages.login_page import *
-from PySteam.pages.main_page import *
+f = Faker()
 
-# не пон исходя из задания, поч такой огромный тестовый сценарий, это атомарно? Разбил на 3, если надо переделать - ок
-# первые два изи, а в третьем я чет припух писать его
-# мб я чет не так понял, но мне каж чем тесты меньше тем понятнее и чище выглядит
-# в логин пейдж насрал методов(просто смотрел видео, повторял за челом), если там есть откровенное г, подсвети плз
+from pages.login_page import LoginPage
+from pages.main_page import MainPage
+
 
 def test_mp_url_is_equal(driver):
+    timeout = 10
     main_page = MainPage(driver)
-    main_page.open(main_page.MAIN_PAGE_URL)
-    assert MainPage.MAIN_PAGE_URL == driver.current_url
-
-
-def test_login_button_from_mp(driver):
-    main_page = MainPage(driver)
-    main_page.open(main_page.MAIN_PAGE_URL)
-    main_page.button_login_click()
-    assert driver.current_url == LoginPage.PAGE_LOGIN_URL
-
-
-def test_sign_in_section(driver): #тут как то странно с попапом кук, в conftest я указал опшн headless, подсвети плз что не так, упустил на каком этапе оно ушло, мб всегда инкогнито ставить?
     login_page = LoginPage(driver)
-    login_page.open(login_page.PAGE_LOGIN_URL)
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, timeout)
+
+    main_page.driver.get(main_page.MAIN_PAGE_URL)
     try:
-        reject_b = wait.until(ec.element_to_be_clickable(login_page.BUTTON_REJECT_COOKIES))
-        reject_b.click()
-        wait.until(ec.invisibility_of_element_located(login_page.BUTTON_REJECT_COOKIES))
+        wait.until(ec.visibility_of_element_located(MainPage.UNIQUE_ELEMENT))
     except TimeoutException:
-        print('Баннера нет')
-    input_login = wait.until(ec.element_to_be_clickable(login_page.get_locator_input_login()))
-    input_login.send_keys('DJKHALEED@UA.777')
-    input_password = wait.until(ec.element_to_be_clickable(login_page.get_locator_input_login_password()))
-    input_password.send_keys('777')
-    login_page.button_submit_elem().click()
-    loader = wait.until(ec.visibility_of_element_located(login_page.BUTTON_SUBMIT_LOADER))
-    assert loader.is_displayed(), 'Лоадер не отображается'
-    wait.until(ec.invisibility_of_element_located(login_page.BUTTON_SUBMIT_LOADER))
+        raise AssertionError("Unique element not found after 10 sec - smth went wrong")
+    button_login_main = driver.find_element(*main_page.BUTTON_LOGIN)
+    button_login_main.click()
+    if not driver.current_url == LoginPage.PAGE_LOGIN_URL:
+        raise AssertionError(
+            f"Expected URL:{LoginPage.PAGE_LOGIN_URL}/ got:{driver.current_url}"
+        )
+    input_login = wait.until(ec.element_to_be_clickable(login_page.INPUT_LOGIN))
+    input_login.send_keys(f.email())
+    input_password = wait.until(ec.element_to_be_clickable(login_page.INPUT_PASSWORD))
+    input_password.send_keys(f.password())
+    button_login = driver.find_element(*login_page.BUTTON_SUBMIT)
+    button_login.click()
+    try:
+        wait.until(ec.visibility_of_element_located(login_page.BUTTON_SUBMIT_LOADER))
+    except TimeoutException:
+        raise AssertionError('Smth went wrong - Element does not apper after timeout')
+    try:
+        wait.until(ec.invisibility_of_element_located(login_page.BUTTON_SUBMIT_LOADER))
+    except TimeoutException:
+        raise AssertionError('Loader does not disappear after 10 sec')
     error_msg = wait.until(ec.visibility_of_element_located(login_page.ERROR_MSG))
     assert error_msg.is_displayed(), 'Ошибка не отображается'
