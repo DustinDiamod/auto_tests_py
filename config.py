@@ -1,0 +1,3 @@
+TIMEOUT = 10
+PAGE_LOGIN_URL = "https://store.steampowered.com/login/"
+MAIN_PAGE_URL = "https://store.steampowered.com/"
