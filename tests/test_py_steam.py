@@ -17,7 +17,7 @@ def test_steam_scenario1(driver):
 
     main_page.wait_loading_page(), "Unique element not found after 10 sec - smth went wrong"
     main_page.click_button_login()
-    login_page.verify_page_load(), "Failed loading expected element"
+    login_page.wait_page_load(), "Failed loading expected element"
     login_page.send_login(f.email())
     login_page.send_login_password(f.password())
     login_page.click_button_submit()

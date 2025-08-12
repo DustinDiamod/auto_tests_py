@@ -1,12 +1,6 @@
 from selenium.webdriver.common.by import \
     By
-from selenium.webdriver.support import \
-    expected_conditions as ec
-from selenium.webdriver.support.ui import \
-    WebDriverWait
 
-from config import \
-    TIMEOUT
 from pages.base_page import \
     BasePage
 
@@ -22,27 +16,21 @@ class LoginPage(BasePage):
     )
     UNIQUE_ELEMENT = (By.XPATH, '//*[contains(@style,"position")]')
 
-    def verify_page_load(self):
-        WebDriverWait(self.driver, TIMEOUT).until(
-            ec.visibility_of_element_located(self.UNIQUE_ELEMENT),
-        )
+    def wait_page_load(self):
+        self.wait_visibility(self.UNIQUE_ELEMENT)
 
     def click_button_submit(self):
-        self.driver.find_element(*self.BUTTON_SUBMIT).click()
+        self.click_elem(self.BUTTON_SUBMIT)
 
     def send_login(self, value):
-        self.driver.find_element(*self.INPUT_LOGIN).send_keys(value)
+        self.send_into(self.INPUT_LOGIN, value)
 
     def send_login_password(self, value):
-        self.driver.find_element(*self.INPUT_PASSWORD).send_keys(value)
+        self.send_into(self.INPUT_PASSWORD, value)
 
     def check_loader_state(self):
-        WebDriverWait(self.driver, TIMEOUT).until(
-            ec.visibility_of_element_located(self.BUTTON_SUBMIT_LOADER)
-        ), "Smth went wrong - Element does not apper after timeout"
-        WebDriverWait(self.driver, TIMEOUT).until(
-            ec.invisibility_of_element_located(self.BUTTON_SUBMIT_LOADER)
-        ), "Loader does not disappear after 10 sec"
+        self.wait_visibility(self.BUTTON_SUBMIT_LOADER)
+        self.wait_disappear(self.BUTTON_SUBMIT_LOADER)
 
     def get_error_message_text(self):
-        return self.driver.find_element(*self.ERROR_MSG).text
+        return self.get_text(self.ERROR_MSG)

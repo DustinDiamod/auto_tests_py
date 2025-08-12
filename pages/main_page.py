@@ -1,12 +1,6 @@
 from selenium.webdriver.common.by import \
     By
-from selenium.webdriver.support import \
-    expected_conditions as ec
-from selenium.webdriver.support.ui import \
-    WebDriverWait
 
-from config import \
-    TIMEOUT
 from pages.base_page import \
     BasePage
 
@@ -19,9 +13,7 @@ class MainPage(BasePage):
     UNIQUE_ELEMENT = (By.ID, "tab_preview_container")
 
     def wait_loading_page(self):
-        WebDriverWait(self.driver, TIMEOUT).until(
-            ec.visibility_of_element_located(self.UNIQUE_ELEMENT)
-        )
+        self.wait_visibility(self.UNIQUE_ELEMENT)
 
     def click_button_login(self):
-        self.driver.find_element(*self.BUTTON_LOGIN).click()
+        self.wait_clickable(self.BUTTON_LOGIN).click()
