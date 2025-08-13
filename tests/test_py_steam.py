@@ -1,8 +1,4 @@
-from faker import \
-    Faker
-
-from config import \
-    MAIN_PAGE_URL
+from faker import Faker
 
 f = Faker()
 
@@ -10,10 +6,10 @@ from pages.login_page import LoginPage
 from pages.main_page import MainPage
 
 
-def test_steam_scenario1(driver):
+def test_steam_scenario1(driver, base_url):
     main_page = MainPage(driver)
     login_page = LoginPage(driver)
-    main_page.driver.get(MAIN_PAGE_URL)
+    main_page.driver.get(base_url)
 
     main_page.wait_loading_page(), "Unique element not found after 10 sec - smth went wrong"
     main_page.click_button_login()
